@@ -1,0 +1,17 @@
+CREATE TABLE dbo.PLCWriteAudit
+(
+    AuditID BIGINT IDENTITY(1,1) PRIMARY KEY,
+    TimestampUtc DATETIME2(3) NOT NULL,
+    UserName NVARCHAR(256) NOT NULL,
+    ClientHost NVARCHAR(256) NULL,
+    PLCName NVARCHAR(100) NOT NULL,
+    PLCAddress VARCHAR(45) NOT NULL,
+    TagName NVARCHAR(512) NOT NULL,
+    OldValue NVARCHAR(MAX) NULL,
+    RequestedValue NVARCHAR(MAX) NULL,
+    ActualValue NVARCHAR(MAX) NULL,
+    WriteSucceeded BIT NOT NULL,
+    Verified BIT NULL,
+    CorrelationID UNIQUEIDENTIFIER NOT NULL,
+    ErrorDetail NVARCHAR(MAX) NULL
+);

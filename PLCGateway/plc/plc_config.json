@@ -1,0 +1,26 @@
+{
+  "read_only": true,
+  "request_timeout_s": 8.0,
+  "max_batch_tags": 64,
+  "max_concurrent_per_plc": 1,
+  "bind_host": "127.0.0.1",
+  "bind_port": 8443,
+  "require_audit_for_writes": true,
+  "write_authorized_users": [],
+  "plcs": {
+    "PLC_6": {
+      "ip": "10.160.12.10",
+      "description": "Brewing PLC 6",
+      "slot": 0,
+      "micro800": false,
+      "writable_tag_patterns": []
+    },
+    "PLC_10": {
+      "ip": "10.160.12.100",
+      "description": "Brewing PLC 10 - validate before deployment",
+      "slot": 0,
+      "micro800": false,
+      "writable_tag_patterns": []
+    }
+  }
+}
