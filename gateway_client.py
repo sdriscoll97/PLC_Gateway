@@ -36,6 +36,8 @@ class GatewayClient:
     def expand(self,plc,path,limit=100,offset=0): return self._request('GET','/schema/expand',{'plc':plc,'path':path,'limit':limit,'offset':offset})
     def schema_type(self,plc,type_name):
         return self._request('GET','/schema/type/'+urllib.parse.quote(type_name,safe=''),{'plc':plc})
+    def schema_cache_status(self,plc): return self._request('GET','/schema/cache/status',{'plc':plc})
+    def refresh_schema(self,plc): return self._request('POST','/schema/cache/refresh',{'plc':plc})
     def objects(self,plc,class_name=None,record=None):
         params={'plc':plc};
         if class_name is not None: params['class']=class_name
