@@ -32,6 +32,9 @@ class PLCManager:
     def tag_list(self, name):
         with self._gates[name]: return self.wrapper(name).tag_list()
 
+    def schema_tags(self, name):
+        with self._gates[name]: return self.wrapper(name).schema_tags()
+
     def diagnostics(self, name):
         with self._gates[name]: return self.wrapper(name).diagnostics()
 
