@@ -1,11 +1,13 @@
-"""Read-only Logix tag/UDT schema discovery for expandable gateway clients."""
+"""Read-only Logix tag/UDT schema discovery backed by the BMX13 schema cache."""
 from __future__ import annotations
 import re
 from fastapi import APIRouter, HTTPException, Request
+from PLCGateway.plc.schema_cache import SchemaCache
 
 router = APIRouter(tags=["schema"])
 _TOKEN = re.compile(r"^(?P<name>[^\[]+)(?P<indexes>(?:\[\d+\])*)$")
 _INDEX = re.compile(r"\[(\d+)\]")
+_CACHE = SchemaCache()
 
 
 def _dimensions(definition):
@@ -40,7 +42,7 @@ def _normalize(name, definition, types, path=None):
             "alias": bool(definition.get("alias")), "structured": dtype in types}
 
 
-def _discover(request, plc):
+def _discover_uncached(request, plc):
     try:
         raw_tags = request.app.state.manager.schema_tags(plc)
     except KeyError as exc:
@@ -57,6 +59,11 @@ def _discover(request, plc):
     return roots, types
 
 
+def _schema(request, plc, refresh=False):
+    data, source = _CACHE.get(plc, lambda: _discover_uncached(request, plc), refresh=refresh)
+    return data, source
+
+
 def _parse_token(token):
     match = _TOKEN.fullmatch(token)
     if not match:
@@ -71,8 +78,7 @@ def _apply_indexes(node, indexes, token):
     for position, index in enumerate(indexes):
         if index < 0 or index >= int(dims[position]):
             raise HTTPException(400, detail={"code":"index_out_of_range","message":token})
-    resolved = dict(node)
-    resolved["dimensions"] = dims[len(indexes):]
+    resolved = dict(node); resolved["dimensions"] = dims[len(indexes):]
     return resolved
 
 
@@ -82,10 +88,8 @@ def _resolve(path, roots, types):
     node = next((item for item in roots if item["name"] == root_name), None)
     if node is None:
         raise HTTPException(404, detail={"code":"unknown_path","message":path})
-    node = _apply_indexes(node, indexes, parts[0])
-    resolved_path = parts[0]
+    node = _apply_indexes(node, indexes, parts[0]); resolved_path = parts[0]
     for token in parts[1:]:
-        # A member cannot be traversed until every array dimension on its parent is indexed.
         if node.get("dimensions"):
             raise HTTPException(400, detail={"code":"array_index_required","message":resolved_path})
         members = types.get(node["datatype"], [])
@@ -93,8 +97,7 @@ def _resolve(path, roots, types):
         child = next((item for item in members if item["name"] == name), None)
         if child is None:
             raise HTTPException(404, detail={"code":"unknown_member","message":token})
-        node = _apply_indexes(child, indexes, token)
-        resolved_path += "." + token
+        node = _apply_indexes(child, indexes, token); resolved_path += "." + token
     node = dict(node); node["path"] = resolved_path
     return node
 
@@ -102,55 +105,62 @@ def _resolve(path, roots, types):
 def _array_children(node, offset, limit):
     dims = list(node.get("dimensions") or [])
     if not dims: return []
-    count = int(dims[0]); end = min(count, offset + limit)
-    children = []
+    count = int(dims[0]); end = min(count, offset + limit); children = []
     for index in range(offset, end):
-        child = dict(node)
-        child["name"] = f"[{index}]"
-        child["path"] = f'{node["path"]}[{index}]'
-        child["dimensions"] = dims[1:]
-        child["kind"] = "array_element"
-        child["expandable"] = bool(child["dimensions"] or child["structured"])
-        children.append(child)
+        child = dict(node); child["name"] = f"[{index}]"; child["path"] = f'{node["path"]}[{index}]'
+        child["dimensions"] = dims[1:]; child["kind"] = "array_element"
+        child["expandable"] = bool(child["dimensions"] or child["structured"]); children.append(child)
     return children
 
 
 @router.get("/schema")
 def schema(request: Request, plc: str, q: str = "", limit: int = 500, offset: int = 0):
     limit=min(max(limit,1),2000); offset=max(offset,0)
-    roots, types = _discover(request, plc); needle=q.lower().strip()
+    data, source = _schema(request, plc); roots=data["roots"]; types=data["types"]; needle=q.lower().strip()
     filtered=[n for n in roots if not needle or needle in n["name"].lower() or needle in n["datatype"].lower()]
     filtered.sort(key=lambda item:item["path"].lower())
-    return {"success":True,"plc":plc,"total":len(filtered),"offset":offset,"limit":limit,
+    return {"success":True,"plc":plc,"cached":source!="discovery","cache_source":source,
+            "generation":data["generation"],"total":len(filtered),"offset":offset,"limit":limit,
             "roots":filtered[offset:offset+limit],"types":types}
 
 
 @router.get("/schema/expand")
 def schema_expand(request: Request, plc: str, path: str, limit: int = 100, offset: int = 0):
-    """Lazily expand one tag/UDT/array node into GUI-ready children."""
     limit=min(max(limit,1),500); offset=max(offset,0)
-    roots, types = _discover(request, plc)
+    data, source = _schema(request, plc); roots=data["roots"]; types=data["types"]
     node = _resolve(path, roots, types)
     if node.get("dimensions"):
-        total=int(node["dimensions"][0]); children=_array_children(node, offset, limit)
-        kind="array"
+        total=int(node["dimensions"][0]); children=_array_children(node, offset, limit); kind="array"
     elif node.get("structured"):
         members=types.get(node["datatype"], []); total=len(members); children=[]
         for member in members[offset:offset+limit]:
-            child=dict(member); child["path"]=path+"."+member["name"]
-            child["kind"]="member"; child["expandable"]=bool(child["dimensions"] or child["structured"])
-            children.append(child)
+            child=dict(member); child["path"]=path+"."+member["name"]; child["kind"]="member"
+            child["expandable"]=bool(child["dimensions"] or child["structured"]); children.append(child)
         kind="structure"
     else:
         total=0; children=[]; kind="leaf"
-    return {"success":True,"plc":plc,"path":path,"datatype":node["datatype"],"kind":kind,
-            "dimensions":node.get("dimensions",[]),"total":total,"offset":offset,"limit":limit,
-            "children":children}
+    return {"success":True,"plc":plc,"cached":source!="discovery","cache_source":source,
+            "generation":data["generation"],"path":path,"datatype":node["datatype"],"kind":kind,
+            "dimensions":node.get("dimensions",[]),"total":total,"offset":offset,"limit":limit,"children":children}
 
 
 @router.get("/schema/type/{type_name}")
 def schema_type(request: Request, type_name: str, plc: str):
-    _roots, types = _discover(request, plc)
+    data, source = _schema(request, plc); types=data["types"]
     if type_name not in types:
         raise HTTPException(404, detail={"code":"unknown_type","message":type_name})
-    return {"success":True,"plc":plc,"type":type_name,"members":types[type_name]}
+    return {"success":True,"plc":plc,"cached":source!="discovery","cache_source":source,
+            "generation":data["generation"],"type":type_name,"members":types[type_name]}
+
+
+@router.get("/schema/cache/status")
+def schema_cache_status(plc: str):
+    return {"success": True, **_CACHE.status(plc)}
+
+
+@router.post("/schema/cache/refresh")
+def schema_cache_refresh(request: Request, plc: str):
+    data, _source = _schema(request, plc, refresh=True)
+    return {"success":True,"plc":plc,"cached":True,"cache_source":"discovery",
+            "generation":data["generation"],"root_count":len(data["roots"]),
+            "type_count":len(data["types"]),"created_at":data["created_at"]}
