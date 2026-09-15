@@ -6,6 +6,7 @@ from tkinter import ttk, messagebox
 from gateway_client import GatewayClient
 
 PAGE=32
+STRUCTURE_LIMIT=500
 @dataclass
 class Node:
     name:str; path:str; datatype:str='Unknown'; dimensions:tuple=(); access:str='Unknown'; structured:bool=False; expandable:bool=False; kind:str='member'; span:tuple=()
@@ -53,10 +54,7 @@ class GatewayExpander:
         if end-start<=PAGE:return None
         size=PAGE
         while math.ceil((end-start)/size)>PAGE:size*=PAGE
-        result=[]
-        for i in range(start,end,size):
-            stop=min(i+size,end); result.append(Node(f'Elements {i}-{stop-1}',node.path,node.datatype,node.dimensions,node.access,node.structured,True,'range',(i,stop)))
-        return result
+        return [Node(f'Elements {i}-{min(i+size,end)-1}',node.path,node.datatype,node.dimensions,node.access,node.structured,True,'range',(i,min(i+size,end))) for i in range(start,end,size)]
     def expand(self,_event=None):
         iid=self.tree.focus()
         if iid in self.loaded or iid not in self.nodes:return
@@ -66,18 +64,20 @@ class GatewayExpander:
             ranged=self._range_nodes(node,*node.span)
             if ranged is not None:
                 for child in ranged:self.insert(iid,child)
-                self.loaded.add(iid); self.status.set(f'Expanded {node.name}.'); return
-            plc=self.plc.get(); start,end=node.span; self.status.set(f'Loading {node.path} elements {start}-{end-1}...'); self._worker(lambda:self.client.expand(plc,node.path,limit=end-start,offset=start),lambda p:self._expanded(iid,node,p)); return
+                self.loaded.add(iid);self.status.set(f'Expanded {node.name}.');return
+            plc=self.plc.get();start,end=node.span;self.status.set(f'Loading {node.path} elements {start}-{end-1}...');self._worker(lambda:self.client.expand(plc,node.path,limit=end-start,offset=start),lambda p:self._expanded(iid,node,p));return
         if node.dimensions:
-            total=int(node.dimensions[0]); ranged=self._range_nodes(node,0,total)
+            total=int(node.dimensions[0]);ranged=self._range_nodes(node,0,total)
             if ranged is not None:
                 for child in ranged:self.insert(iid,child)
-                self.loaded.add(iid); self.status.set(f'{node.path}: {total} elements grouped into expandable ranges.'); return
-        self.tree.insert(iid,'end',text='Loading...'); plc=self.plc.get(); self.status.set('Expanding '+node.path+' through gateway...'); self._worker(lambda:self.client.expand(plc,node.path,limit=PAGE),lambda p:self._expanded(iid,node,p))
+                self.loaded.add(iid);self.status.set(f'{node.path}: {total} elements grouped into expandable ranges.');return
+        self.tree.insert(iid,'end',text='Loading...');plc=self.plc.get();self.status.set('Expanding '+node.path+' through gateway...')
+        # UDTs are not array-paged: retrieve their complete visible member list.
+        self._worker(lambda:self.client.expand(plc,node.path,limit=STRUCTURE_LIMIT),lambda p:self._expanded(iid,node,p))
     def _expanded(self,iid,node,payload):
         for child in self.tree.get_children(iid):self.tree.delete(child)
         for raw in payload.get('children',[]):self.insert(iid,node_from(raw))
-        self.loaded.add(iid); self.status.set('Expanded '+node.path+'.')
+        self.loaded.add(iid);total=int(payload.get('total',0));shown=len(payload.get('children',[]));self.status.set(f'Expanded {node.path}: {shown}/{total} members.')
     def selected(self):
         sel=self.tree.selection();return (sel[0],self.nodes.get(sel[0])) if sel else (None,None)
     def read_selected(self):
