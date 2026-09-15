@@ -1,4 +1,4 @@
-"""Bounded, serialized Pylogix access. All CIP originates on the gateway host."""
+"""Bounded, serialized PLC access. All controller traffic originates on the gateway host."""
 from __future__ import annotations
 import socket, threading, time
 from pylogix import PLC
@@ -42,16 +42,24 @@ class PylogixWrapper:
             return self._connection().Write(tag, value)
 
     def tag_list(self):
-        """Return the controller tag list using Pylogix's standard browse call.
-
-        PLC_6 validation on BBCMWPBMX13 proved that GetTagList() succeeds while
-        GetTagList(allTags=True) can fail with a CIP "Connection failure".  The
-        gateway therefore uses the same standard call as the validated direct
-        Pylogix test. Program-scoped/expanded discovery can be added explicitly
-        later rather than changing the semantics of the first controller browse.
-        """
+        # Keep this identical to the direct PLC_6 test proven on BBCMWPBMX13.
         with self._lock:
             return self._connection().GetTagList()
+
+    def schema_tags(self):
+        """Return pycomm3's read-only normalized tag metadata, including UDT definitions."""
+        if self.definition.micro800:
+            raise PLCError("UDT schema discovery is only supported for Logix controllers")
+        try:
+            from pycomm3 import LogixDriver
+        except ImportError as exc:
+            raise PLCError("Schema discovery requires pycomm3") from exc
+        endpoint = f"{self.definition.ip}/{self.definition.slot}"
+        with self._lock:
+            # init_tags=False prevents an implicit enumeration before we explicitly request it.
+            with LogixDriver(endpoint, init_tags=False, init_program_tags=False) as driver:
+                tags = driver.get_tag_list(program='*')
+                return tags
 
     def plc_time(self):
         with self._lock:
