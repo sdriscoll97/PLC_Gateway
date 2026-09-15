@@ -5,7 +5,6 @@ legacy GUI while performing no direct socket/CIP communication on the client.
 """
 from __future__ import annotations
 import threading
-from types import SimpleNamespace
 from gateway_client import GatewayClient
 
 class Response:
@@ -49,12 +48,18 @@ class GatewaySession:
     def read(self,tags):
         if isinstance(tags,str): tags=[tags]
         if not self.connected: raise RuntimeError('[%s] not connected.' % self.name)
-        payload=self.client.read_batch(self.name,tags) if len(tags)>1 else None
-        if payload is None:
+        if len(tags)==1:
             row=self.client.read(self.name,tags[0]); return [Response(tags[0],row.get('value'),row.get('status','Success' if row.get('success') else 'Error'))]
-        rows=payload.get('results',payload.get('items',[])); out=[]
-        for i,tag in enumerate(tags):
-            row=rows[i] if i<len(rows) else {}; out.append(Response(tag,row.get('value'),row.get('status','No response')))
+        payload=self.client.read_batch(self.name,tags)
+        # /read/batch returns an ordered `items` array for response metadata and
+        # a `results` mapping for convenience.  Preserve input order by using
+        # items; the GUI and Orphan Watcher rely on positional batch responses.
+        rows=payload.get('items') or []
+        by_tag={row.get('tag'):row for row in rows if isinstance(row,dict) and row.get('tag')}
+        out=[]
+        for tag in tags:
+            row=by_tag.get(tag,{})
+            out.append(Response(tag,row.get('value'),row.get('status','No response')))
         return out
     def read_map(self,tags): return dict(zip(tags,self.read(tags)))
     def write(self,tag,value,verify_tag=None):
