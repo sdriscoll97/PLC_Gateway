@@ -1,7 +1,6 @@
 """Bounded, serialized Pylogix access. All CIP originates on the gateway host."""
 from __future__ import annotations
 import socket, threading, time
-from contextlib import contextmanager
 from pylogix import PLC
 
 class PLCError(RuntimeError): pass
@@ -43,10 +42,16 @@ class PylogixWrapper:
             return self._connection().Write(tag, value)
 
     def tag_list(self):
+        """Return the controller tag list using Pylogix's standard browse call.
+
+        PLC_6 validation on BBCMWPBMX13 proved that GetTagList() succeeds while
+        GetTagList(allTags=True) can fail with a CIP "Connection failure".  The
+        gateway therefore uses the same standard call as the validated direct
+        Pylogix test. Program-scoped/expanded discovery can be added explicitly
+        later rather than changing the semantics of the first controller browse.
+        """
         with self._lock:
-            comm = self._connection()
-            try: return comm.GetTagList(allTags=True)
-            except TypeError: return comm.GetTagList()
+            return self._connection().GetTagList()
 
     def plc_time(self):
         with self._lock:
