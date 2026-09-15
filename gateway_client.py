@@ -32,6 +32,10 @@ class GatewayClient:
     def read(self,plc,tag): return self._request('GET','/read',{'plc':plc,'tag':tag})
     def read_batch(self,plc,tags): return self._request('POST','/read/batch',body={'plc':plc,'tags':list(tags)})
     def browse(self,plc,q='',limit=500,offset=0): return self._request('GET','/browse',{'plc':plc,'q':q,'limit':limit,'offset':offset})
+    def schema(self,plc,q='',limit=500,offset=0): return self._request('GET','/schema',{'plc':plc,'q':q,'limit':limit,'offset':offset})
+    def expand(self,plc,path,limit=100,offset=0): return self._request('GET','/schema/expand',{'plc':plc,'path':path,'limit':limit,'offset':offset})
+    def schema_type(self,plc,type_name):
+        return self._request('GET','/schema/type/'+urllib.parse.quote(type_name,safe=''),{'plc':plc})
     def objects(self,plc,class_name=None,record=None):
         params={'plc':plc};
         if class_name is not None: params['class']=class_name
