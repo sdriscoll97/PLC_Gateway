@@ -72,7 +72,6 @@ class GatewayExpander:
                 for child in ranged:self.insert(iid,child)
                 self.loaded.add(iid);self.status.set(f'{node.path}: {total} elements grouped into expandable ranges.');return
         self.tree.insert(iid,'end',text='Loading...');plc=self.plc.get();self.status.set('Expanding '+node.path+' through gateway...')
-        # UDTs are not array-paged: retrieve their complete visible member list.
         self._worker(lambda:self.client.expand(plc,node.path,limit=STRUCTURE_LIMIT),lambda p:self._expanded(iid,node,p))
     def _expanded(self,iid,node,payload):
         for child in self.tree.get_children(iid):self.tree.delete(child)
@@ -106,9 +105,13 @@ class GatewayExpander:
         self.root.after(self.READ_INTERVAL_MS,self.live_tick)
     def _batch_ready(self,leaves,payload):
         try:
-            rows=payload.get('results',payload.get('items',[]))
-            for (iid,path),row in zip(leaves,rows):
-                if iid in self.nodes and self.nodes[iid].path==path:self.tree.set(iid,'value',repr(row.get('value')));self.tree.set(iid,'state',str(row.get('status','')))
+            rows=payload.get('items') or []
+            by_tag={row.get('tag'):row for row in rows if isinstance(row,dict) and row.get('tag')}
+            for iid,path in leaves:
+                row=by_tag.get(path,{})
+                if iid in self.nodes and self.nodes[iid].path==path:
+                    self.tree.set(iid,'value',repr(row.get('value')) if row.get('success') else '')
+                    self.tree.set(iid,'state',str(row.get('status','No response')))
         finally:self.reading=False
     def pump(self):
         try:
