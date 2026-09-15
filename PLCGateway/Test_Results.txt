@@ -1,0 +1,317 @@
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $schema = Invoke-RestMethod -Uri "http://127.0.0.1:8443/schema?plc=PLC_6&q=DiTSystemData&limit=20"
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $schema.roots | Format-Table path,datatype,structured,dimensions,access -AutoSize
+
+path            datatype           structured dimensions access
+----            --------           ---------- ---------- ------
+DiTSystemData   DiTSysSystemData         True {}         Read/Write
+DiTSystemData2  DiTSysSystemData2        True {}         Read/Write
+DiTSystemData26 DiTSysSystemData26       True {}         Read/Write
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $root = $schema.roots | Where-Object path -eq "DiTSystemData" | Select-Object -First 1
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $root | Format-List *
+
+name       : DiTSystemData
+path       : DiTSystemData
+datatype   : DiTSysSystemData
+dimensions : {}
+access     : Read/Write
+alias      : False
+structured : True
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $typeName = $root.datatype
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> Write-Host "DiTSystemData datatype: $typeName"
+DiTSystemData datatype: DiTSysSystemData
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $level1 = $schema.types.$typeName
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $level1 | Format-Table name,datatype,structured,dimensions,access  -AutoSize
+
+name                        datatype                          structured dimensions access
+----                        --------                          ---------- ---------- ------
+bSecImpulse                 BOOL                                   False {}         Unknown
+bMinImpulse                 BOOL                                   False {}         Unknown
+bHourImpulse                BOOL                                   False {}         Unknown
+bDayImpulse                 BOOL                                   False {}         Unknown
+MonthImpulse                BOOL                                   False {}         Unknown
+bYearImpulse                BOOL                                   False {}         Unknown
+bTrue                       BOOL                                   False {}         Unknown
+bFalse                      BOOL                                   False {}         Unknown
+b05HZ                       BOOL                                   False {}         Unknown
+b1HZ                        BOOL                                   False {}         Unknown
+b2HZ                        BOOL                                   False {}         Unknown
+CPU_scanning                BOOL                                   False {}         Unknown
+bDoMasterReset              BOOL                                   False {}         Unknown
+InitVisuProducer            BOOL                                   False {}         Unknown
+CycleCounter                DINT                                   False {}         Unknown
+SCANTIME                    DINT                                   False {}         Unknown
+SCANTIME_ACT                DINT                                   False {}         Unknown
+SCANTIME_MIN                DINT                                   False {}         Unknown
+SCANTIME_MAX                DINT                                   False {}         Unknown
+SCANRATE                    DINT                                   False {}         Unknown
+COMM_TIMESLICE              DINT                                   False {}         Unknown
+SystemTimerFlags            DINT                                   False {}         Unknown
+ProjectType                 DINT                                   False {}         Unknown
+DiTVersion                  STRING10                                True {}         Unknown
+dtLocalTime                 DiTSysTimeStamp                         True {}         Unknown
+dtUTCTime                   DiTSysTimeStamp                         True {}         Unknown
+dtStartTime                 DiTSysTimeStamp                         True {}         Unknown
+AI                          REAL                                   False {200}      Unknown
+AO                          REAL                                   False {200}      Unknown
+DI                          DINT                                   False {200}      Unknown
+DO                          DINT                                   False {200}      Unknown
+Flags                       DINT                                   False {200}      Unknown
+ClassObjects                DiTSysClassObjects                      True {}         Unknown
+ClassSettings               DiTSysClassSettings                     True {}         Unknown
+ClassAttributes             DiTSysClassAttributes                   True {}         Unknown
+OCMCommandToObjectInterface DiTSysC21CommandToObject                True {}         Unknown
+CommChannel                 DiTSysCommChannel                       True {10}       Unknown
+CommTimeStamp               DINT                                   False {7}        Unknown
+DBComData                   DiTSysC510DBCommGlobalStatusArray       True {}         Unknown
+DBComDataC516               DiTSysC516SUGlobalStatusArray           True {}         Unknown
+DBComDataC523               DiTSysC523LTNGlobalStatusArray          True {}         Unknown
+ThisStation                 DINT                                   False {}         Unknown
+ReconfigRequestTimeStamp    DINT                                   False {}         Unknown
+MessageFiFo                 DiTSysMessageEntry                      True {}         Unknown
+MessageFiFoEntries          INT                                    False {4800}     Unknown
+MsgReadBuffer               DiTSysMsgReadBuffer                     True {}         Unknown
+nCrossCommPrevSecond        DINT                                   False {}         Unknown
+bCrossCommSecImpulse        BOOL                                   False {}         Unknown
+Constants                   DiTSysConstants                         True {}         Unknown
+bExtendedSimulationON       BOOL                                   False {}         Unknown
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $classObjects = $level1 | Where-Object name -eq "ClassObjects" | Select-Object -First 1
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $classObjects | Format-List *
+
+name       : ClassObjects
+path       : ClassObjects
+datatype   : DiTSysClassObjects
+dimensions : {}
+access     : Unknown
+alias      : False
+structured : True
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $classType = $classObjects.datatype
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> Write-Host "ClassObjects datatype: $classType"
+ClassObjects datatype: DiTSysClassObjects
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $level2 = $schema.types.$classType
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $level2 | Format-Table name,datatype,structured,dimensions,access -AutoSize
+
+name                          datatype                            structured dimensions access
+----                          --------                            ---------- ---------- ------
+C21                           DiTSysC21OCM                              True {401}      Unknown
+C507                          DiTSysC507SIG                             True {11}       Unknown
+C510                          DiTSysC510DBComm                          True {35}       Unknown
+C512                          DiTSysC512VOB                             True {1201}     Unknown
+C514                          DiTSysC514Logic                           True {501}      Unknown
+C515                          DiTSysC515XCPY                            True {11}       Unknown
+C516                          DiTSysC516SU                              True {21}       Unknown
+C520                          DiTSysC520SEQ                             True {51}       Unknown
+C523                          DiTSysC523LTN                             True {33}       Unknown
+C524                          DiTSysC524Pipe                            True {11}       Unknown
+C525                          DiTSysC525DCM                             True {801}      Unknown
+C0CMDBuffer                   DiTSysStdCmdBuffer                        True {30}       Unknown
+C21CMDBuffer                  DiTSysC21OCMOPCCmdBuffer                  True {30}       Unknown
+C507CMDBuffer                 DiTSysC507SIGOPCCmdBuffer                 True {30}       Unknown
+C510CMDBuffer                 DiTSysC510DBCommOPCCmdBuffer              True {30}       Unknown
+C512CMDBuffer                 DiTSysC512VOBOPCCmdBuffer                 True {30}       Unknown
+C514CMDBuffer                 DiTSysC514LogicOPCCmdBuffer               True {30}       Unknown
+C515CMDBuffer                 DiTSysC515XCPYOPCCmdBuffer                True {30}       Unknown
+C516CMDBuffer                 DiTSysC516SUOPCCmdBuffer                  True {30}       Unknown
+C520CMDBuffer                 DiTSysC520SEQOPCCmdBuffer                 True {30}       Unknown
+C523CMDBuffer                 DiTSysC523LTNOPCCmdBuffer                 True {30}       Unknown
+C524CMDBuffer                 DiTSysC524PipeOPCCmdBuffer                True {30}       Unknown
+C525CMDBuffer                 DiTSysC525DCMOPCCmdBuffer                 True {30}       Unknown
+DiTSysCmdBuffer               DiTSysCmdBuffer                           True {10}       Unknown
+DiTSysCmdBufferAsync          DiTSysCmdBufferAsyncData                  True {}         Unknown
+AsyncCommandToObjectInterface DiTSysAsyncCommandToObjectInterface       True {}         Unknown
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $c512 = $schema.types.$classObjects.datatype | Where-Object name -eq "C512" | Select-Object -First 1
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $c512 | Format-List *
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> Show-UdtMembers $c512.datatype
+Show-UdtMembers: The term 'Show-UdtMembers' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+
+[General Feedback]
+  The command "Show-UdtMembers" was not found, but does exist in the current location.
+  PowerShell does not load commands from the current location by default (see 'Get-Help about_Command_Precedence').
+
+  If you trust this command, run the following command instead:
+    > .\Show-UdtMembers
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> .\Show-UdtMembers $c512.datatype
+
+=== DiTSysSystemData ===
+
+name                        datatype                          structured dimensions access
+----                        --------                          ---------- ---------- ------
+bSecImpulse                 BOOL                                   False {}         Unknown
+bMinImpulse                 BOOL                                   False {}         Unknown
+bHourImpulse                BOOL                                   False {}         Unknown
+bDayImpulse                 BOOL                                   False {}         Unknown
+MonthImpulse                BOOL                                   False {}         Unknown
+bYearImpulse                BOOL                                   False {}         Unknown
+bTrue                       BOOL                                   False {}         Unknown
+bFalse                      BOOL                                   False {}         Unknown
+b05HZ                       BOOL                                   False {}         Unknown
+b1HZ                        BOOL                                   False {}         Unknown
+b2HZ                        BOOL                                   False {}         Unknown
+CPU_scanning                BOOL                                   False {}         Unknown
+bDoMasterReset              BOOL                                   False {}         Unknown
+InitVisuProducer            BOOL                                   False {}         Unknown
+CycleCounter                DINT                                   False {}         Unknown
+SCANTIME                    DINT                                   False {}         Unknown
+SCANTIME_ACT                DINT                                   False {}         Unknown
+SCANTIME_MIN                DINT                                   False {}         Unknown
+SCANTIME_MAX                DINT                                   False {}         Unknown
+SCANRATE                    DINT                                   False {}         Unknown
+COMM_TIMESLICE              DINT                                   False {}         Unknown
+SystemTimerFlags            DINT                                   False {}         Unknown
+ProjectType                 DINT                                   False {}         Unknown
+DiTVersion                  STRING10                                True {}         Unknown
+dtLocalTime                 DiTSysTimeStamp                         True {}         Unknown
+dtUTCTime                   DiTSysTimeStamp                         True {}         Unknown
+dtStartTime                 DiTSysTimeStamp                         True {}         Unknown
+AI                          REAL                                   False {200}      Unknown
+AO                          REAL                                   False {200}      Unknown
+DI                          DINT                                   False {200}      Unknown
+DO                          DINT                                   False {200}      Unknown
+Flags                       DINT                                   False {200}      Unknown
+ClassObjects                DiTSysClassObjects                      True {}         Unknown
+ClassSettings               DiTSysClassSettings                     True {}         Unknown
+ClassAttributes             DiTSysClassAttributes                   True {}         Unknown
+OCMCommandToObjectInterface DiTSysC21CommandToObject                True {}         Unknown
+CommChannel                 DiTSysCommChannel                       True {10}       Unknown
+CommTimeStamp               DINT                                   False {7}        Unknown
+DBComData                   DiTSysC510DBCommGlobalStatusArray       True {}         Unknown
+DBComDataC516               DiTSysC516SUGlobalStatusArray           True {}         Unknown
+DBComDataC523               DiTSysC523LTNGlobalStatusArray          True {}         Unknown
+ThisStation                 DINT                                   False {}         Unknown
+ReconfigRequestTimeStamp    DINT                                   False {}         Unknown
+MessageFiFo                 DiTSysMessageEntry                      True {}         Unknown
+MessageFiFoEntries          INT                                    False {4800}     Unknown
+MsgReadBuffer               DiTSysMsgReadBuffer                     True {}         Unknown
+nCrossCommPrevSecond        DINT                                   False {}         Unknown
+bCrossCommSecImpulse        BOOL                                   False {}         Unknown
+Constants                   DiTSysConstants                         True {}         Unknown
+bExtendedSimulationON       BOOL                                   False {}         Unknown
+
+
+=== DiTSysClassObjects ===
+
+name                          datatype                            structured dimensions access
+----                          --------                            ---------- ---------- ------
+C21                           DiTSysC21OCM                              True {401}      Unknown
+C507                          DiTSysC507SIG                             True {11}       Unknown
+C510                          DiTSysC510DBComm                          True {35}       Unknown
+C512                          DiTSysC512VOB                             True {1201}     Unknown
+C514                          DiTSysC514Logic                           True {501}      Unknown
+C515                          DiTSysC515XCPY                            True {11}       Unknown
+C516                          DiTSysC516SU                              True {21}       Unknown
+C520                          DiTSysC520SEQ                             True {51}       Unknown
+C523                          DiTSysC523LTN                             True {33}       Unknown
+C524                          DiTSysC524Pipe                            True {11}       Unknown
+C525                          DiTSysC525DCM                             True {801}      Unknown
+C0CMDBuffer                   DiTSysStdCmdBuffer                        True {30}       Unknown
+C21CMDBuffer                  DiTSysC21OCMOPCCmdBuffer                  True {30}       Unknown
+C507CMDBuffer                 DiTSysC507SIGOPCCmdBuffer                 True {30}       Unknown
+C510CMDBuffer                 DiTSysC510DBCommOPCCmdBuffer              True {30}       Unknown
+C512CMDBuffer                 DiTSysC512VOBOPCCmdBuffer                 True {30}       Unknown
+C514CMDBuffer                 DiTSysC514LogicOPCCmdBuffer               True {30}       Unknown
+C515CMDBuffer                 DiTSysC515XCPYOPCCmdBuffer                True {30}       Unknown
+C516CMDBuffer                 DiTSysC516SUOPCCmdBuffer                  True {30}       Unknown
+C520CMDBuffer                 DiTSysC520SEQOPCCmdBuffer                 True {30}       Unknown
+C523CMDBuffer                 DiTSysC523LTNOPCCmdBuffer                 True {30}       Unknown
+C524CMDBuffer                 DiTSysC524PipeOPCCmdBuffer                True {30}       Unknown
+C525CMDBuffer                 DiTSysC525DCMOPCCmdBuffer                 True {30}       Unknown
+DiTSysCmdBuffer               DiTSysCmdBuffer                           True {10}       Unknown
+DiTSysCmdBufferAsync          DiTSysCmdBufferAsyncData                  True {}         Unknown
+AsyncCommandToObjectInterface DiTSysAsyncCommandToObjectInterface       True {}         Unknown
+
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $statusInterface = $schema.types.$($c512.datatype) | Where-Object name -eq "sStatusInterface" | Select-Object -First 1
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> $statusInterface | Format-List *
+PS C:\Resources\SDD\PLC_Gateway-main\PLC_Gateway-main> .\Show-UdtMembers $statusInterface.datatype
+
+=== DiTSysSystemData ===
+
+name                        datatype                          structured dimensions access
+----                        --------                          ---------- ---------- ------
+bSecImpulse                 BOOL                                   False {}         Unknown
+bMinImpulse                 BOOL                                   False {}         Unknown
+bHourImpulse                BOOL                                   False {}         Unknown
+bDayImpulse                 BOOL                                   False {}         Unknown
+MonthImpulse                BOOL                                   False {}         Unknown
+bYearImpulse                BOOL                                   False {}         Unknown
+bTrue                       BOOL                                   False {}         Unknown
+bFalse                      BOOL                                   False {}         Unknown
+b05HZ                       BOOL                                   False {}         Unknown
+b1HZ                        BOOL                                   False {}         Unknown
+b2HZ                        BOOL                                   False {}         Unknown
+CPU_scanning                BOOL                                   False {}         Unknown
+bDoMasterReset              BOOL                                   False {}         Unknown
+InitVisuProducer            BOOL                                   False {}         Unknown
+CycleCounter                DINT                                   False {}         Unknown
+SCANTIME                    DINT                                   False {}         Unknown
+SCANTIME_ACT                DINT                                   False {}         Unknown
+SCANTIME_MIN                DINT                                   False {}         Unknown
+SCANTIME_MAX                DINT                                   False {}         Unknown
+SCANRATE                    DINT                                   False {}         Unknown
+COMM_TIMESLICE              DINT                                   False {}         Unknown
+SystemTimerFlags            DINT                                   False {}         Unknown
+ProjectType                 DINT                                   False {}         Unknown
+DiTVersion                  STRING10                                True {}         Unknown
+dtLocalTime                 DiTSysTimeStamp                         True {}         Unknown
+dtUTCTime                   DiTSysTimeStamp                         True {}         Unknown
+dtStartTime                 DiTSysTimeStamp                         True {}         Unknown
+AI                          REAL                                   False {200}      Unknown
+AO                          REAL                                   False {200}      Unknown
+DI                          DINT                                   False {200}      Unknown
+DO                          DINT                                   False {200}      Unknown
+Flags                       DINT                                   False {200}      Unknown
+ClassObjects                DiTSysClassObjects                      True {}         Unknown
+ClassSettings               DiTSysClassSettings                     True {}         Unknown
+ClassAttributes             DiTSysClassAttributes                   True {}         Unknown
+OCMCommandToObjectInterface DiTSysC21CommandToObject                True {}         Unknown
+CommChannel                 DiTSysCommChannel                       True {10}       Unknown
+CommTimeStamp               DINT                                   False {7}        Unknown
+DBComData                   DiTSysC510DBCommGlobalStatusArray       True {}         Unknown
+DBComDataC516               DiTSysC516SUGlobalStatusArray           True {}         Unknown
+DBComDataC523               DiTSysC523LTNGlobalStatusArray          True {}         Unknown
+ThisStation                 DINT                                   False {}         Unknown
+ReconfigRequestTimeStamp    DINT                                   False {}         Unknown
+MessageFiFo                 DiTSysMessageEntry                      True {}         Unknown
+MessageFiFoEntries          INT                                    False {4800}     Unknown
+MsgReadBuffer               DiTSysMsgReadBuffer                     True {}         Unknown
+nCrossCommPrevSecond        DINT                                   False {}         Unknown
+bCrossCommSecImpulse        BOOL                                   False {}         Unknown
+Constants                   DiTSysConstants                         True {}         Unknown
+bExtendedSimulationON       BOOL                                   False {}         Unknown
+
+
+=== DiTSysClassObjects ===
+
+name                          datatype                            structured dimensions access
+----                          --------                            ---------- ---------- ------
+C21                           DiTSysC21OCM                              True {401}      Unknown
+C507                          DiTSysC507SIG                             True {11}       Unknown
+C510                          DiTSysC510DBComm                          True {35}       Unknown
+C512                          DiTSysC512VOB                             True {1201}     Unknown
+C514                          DiTSysC514Logic                           True {501}      Unknown
+C515                          DiTSysC515XCPY                            True {11}       Unknown
+C516                          DiTSysC516SU                              True {21}       Unknown
+C520                          DiTSysC520SEQ                             True {51}       Unknown
+C523                          DiTSysC523LTN                             True {33}       Unknown
+C524                          DiTSysC524Pipe                            True {11}       Unknown
+C525                          DiTSysC525DCM                             True {801}      Unknown
+C0CMDBuffer                   DiTSysStdCmdBuffer                        True {30}       Unknown
+C21CMDBuffer                  DiTSysC21OCMOPCCmdBuffer                  True {30}       Unknown
+C507CMDBuffer                 DiTSysC507SIGOPCCmdBuffer                 True {30}       Unknown
+C510CMDBuffer                 DiTSysC510DBCommOPCCmdBuffer              True {30}       Unknown
+C512CMDBuffer                 DiTSysC512VOBOPCCmdBuffer                 True {30}       Unknown
+C514CMDBuffer                 DiTSysC514LogicOPCCmdBuffer               True {30}       Unknown
+C515CMDBuffer                 DiTSysC515XCPYOPCCmdBuffer                True {30}       Unknown
+C516CMDBuffer                 DiTSysC516SUOPCCmdBuffer                  True {30}       Unknown
+C520CMDBuffer                 DiTSysC520SEQOPCCmdBuffer                 True {30}       Unknown
+C523CMDBuffer                 DiTSysC523LTNOPCCmdBuffer                 True {30}       Unknown
+C524CMDBuffer                 DiTSysC524PipeOPCCmdBuffer                True {30}       Unknown
+C525CMDBuffer                 DiTSysC525DCMOPCCmdBuffer                 True {30}       Unknown
+DiTSysCmdBuffer               DiTSysCmdBuffer                           True {10}       Unknown
+DiTSysCmdBufferAsync          DiTSysCmdBufferAsyncData                  True {}         Unknown
+AsyncCommandToObjectInterface DiTSysAsyncCommandToObjectInterface       True {}         Unknown
