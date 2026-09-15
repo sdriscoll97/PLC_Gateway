@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from .api.read import router as read_router
 from .api.write import router as write_router
 from .api.browse import router as browse_router
+from .api.schema import router as schema_router
 from .api.diagnostics import router as diagnostics_router
 from .api.objects import router as objects_router
 from .plc.config import GatewayConfig
@@ -25,8 +26,8 @@ async def lifespan(app):
     yield
     app.state.manager.close(); app.state.object_db.close()
 
-app=FastAPI(title="PLC Gateway",version="1.0.0",lifespan=lifespan)
-for router in (read_router,write_router,browse_router,diagnostics_router,objects_router): app.include_router(router)
+app=FastAPI(title="PLC Gateway",version="1.1.0",lifespan=lifespan)
+for router in (read_router,write_router,browse_router,schema_router,diagnostics_router,objects_router): app.include_router(router)
 
 @app.get("/health",tags=["health"])
 def health(request:Request):
