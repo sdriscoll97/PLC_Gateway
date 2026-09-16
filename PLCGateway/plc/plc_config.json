@@ -8,19 +8,24 @@
   "require_audit_for_writes": true,
   "write_authorized_users": [],
   "plcs": {
-    "PLC_6": {
-      "ip": "10.160.12.10",
-      "description": "Brewing PLC 6",
-      "slot": 0,
-      "micro800": false,
-      "writable_tag_patterns": []
-    },
-    "PLC_10": {
-      "ip": "10.160.12.100",
-      "description": "Brewing PLC 10 - validate before deployment",
-      "slot": 0,
-      "micro800": false,
-      "writable_tag_patterns": []
-    }
+    "MAC_PLC": {"ip": "172.23.41.50", "description": "Migrated from PYLOGIX-GUI-EXPANDER", "slot": 6, "micro800": false, "writable_tag_patterns": []},
+    "PLC_1": {"ip": "10.160.12.4", "description": "Brewing PLC 1", "slot": 2, "micro800": false, "writable_tag_patterns": []},
+    "PLC_2": {"ip": "10.160.12.5", "description": "Brewing PLC 2", "slot": 2, "micro800": false, "writable_tag_patterns": []},
+    "PLC_3": {"ip": "10.160.12.6", "description": "Brewing PLC 3", "slot": 2, "micro800": false, "writable_tag_patterns": []},
+    "PLC_4": {"ip": "10.160.12.3", "description": "Brewing PLC 4", "slot": 2, "micro800": false, "writable_tag_patterns": []},
+    "PLC_5": {"ip": "10.160.12.7", "description": "Brewing PLC 5", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_6": {"ip": "10.160.12.10", "description": "Brewing PLC 6", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_7": {"ip": "10.160.12.12", "description": "Brewing PLC 7", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_8": {"ip": "10.160.12.14", "description": "Brewing PLC 8", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_9": {"ip": "10.160.12.16", "description": "Brewing PLC 9", "slot": 5, "micro800": false, "writable_tag_patterns": []},
+    "PLC_10": {"ip": "10.160.12.100", "description": "Brewing PLC 10", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_11": {"ip": "10.160.12.110", "description": "Brewing PLC 11", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_12": {"ip": "10.160.12.120", "description": "Brewing PLC 12", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "PLC_13": {"ip": "10.160.12.130", "description": "Brewing PLC 13", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "YeastProp": {"ip": "172.28.30.17", "description": "Yeast propagation PLC", "slot": 0, "micro800": false, "writable_tag_patterns": []},
+    "FNS_MCMS": {"ip": "10.32.100.144", "description": "FNS MCMS", "slot": 3, "micro800": false, "writable_tag_patterns": []},
+    "FRM_MCMS": {"ip": "10.32.100.144", "description": "FRM MCMS", "slot": 1, "micro800": false, "writable_tag_patterns": []},
+    "MTR_MCMS": {"ip": "10.32.100.144", "description": "MTR MCMS", "slot": 2, "micro800": false, "writable_tag_patterns": []},
+    "WPR_MCMS": {"ip": "10.32.100.144", "description": "WPR MCMS", "slot": 0, "micro800": false, "writable_tag_patterns": []}
   }
 }
